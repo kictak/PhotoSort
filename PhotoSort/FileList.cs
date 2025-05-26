@@ -28,7 +28,7 @@ namespace PhotoSort
                     {
                         FileInfo fileinfo = new FileInfo(file);
                         allFiles.Add(fileinfo);
-                        Console.WriteLine($"Имя файла: {fileinfo.Name} || Дата создания: {fileinfo.LastWriteTime}");
+                        Console.WriteLine($"Имя файла: {fileinfo.Name} || Дата создания: {fileinfo.LastWriteTime} || {(double)fileinfo.Length / 1000000} мб");
                     }
                 }
 
@@ -46,7 +46,7 @@ namespace PhotoSort
             {
                 Console.WriteLine($"Ошибка: {e.Message}");
             }
-
+            Console.WriteLine();
             return allFiles;
         }
 
@@ -54,7 +54,7 @@ namespace PhotoSort
         {
             Console.WriteLine();
             Console.WriteLine("======================");
-            Console.WriteLine($"^ Всего файлов {files.Count} ^");
+            Console.WriteLine($"^ Всего файлов {files.Count}^");
             Console.WriteLine("======================");
             Console.WriteLine();
         }

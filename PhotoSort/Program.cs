@@ -1,4 +1,6 @@
-﻿//C:\Users\stepr\Desktop\Фото\
+﻿
+
+//C:\Users\stepr\Desktop\Фото\
 //C:\Users\stepr\Desktop\копия\
 //C:\Users\stepr\Desktop\копия 2\
 namespace PhotoSort
@@ -41,7 +43,7 @@ namespace PhotoSort
                         break;
 
                     case "3"://Сжатие файлов
-                        hash.ReduceImageSize(s.SearchFile(x));
+                        hash.RizeImage(s.SearchFile(x));
                         break;
 
                     case "4"://...
@@ -87,7 +89,7 @@ namespace PhotoSort
             Console.WriteLine("             [Опции PhotoSort]             ");
             Console.WriteLine("--->[1.Указать путь к папке или сменить его.");
             Console.WriteLine("--->[2.Показать содержимое папки.");
-            Console.WriteLine("--->[3.Удалbnm дубликаты.");
+            Console.WriteLine("--->[3.Преобразовать фото.");
             Console.WriteLine("--->[4.");
             Console.WriteLine("--->[5.");
             Console.WriteLine("--->[6.");
