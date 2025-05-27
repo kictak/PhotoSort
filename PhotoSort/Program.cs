@@ -1,6 +1,4 @@
-﻿
-
-//C:\Users\stepr\Desktop\Фото\
+﻿//C:\Users\stepr\Desktop\Фото\
 //C:\Users\stepr\Desktop\копия\
 //C:\Users\stepr\Desktop\копия 2\
 namespace PhotoSort
@@ -15,14 +13,13 @@ namespace PhotoSort
             string x = string.Empty;
 
             bool exit = false;
-            while (exit != null)
+            while (!exit)
             {
                 Option();
                 switch (Console.ReadLine())
                 {
-                    case "1": //Вставка пути к файлу или замена пути
-                        Console.WriteLine();
-                        Console.WriteLine("||   Вставьте, пожалуйста, путь к папке.      ||");
+                    case "1"://Указание папки для работы с ней
+                        Console.WriteLine("\n||   Вставьте, пожалуйста, путь к папке.      ||");
                         Console.WriteLine("|| Пример пути: C:\\Users\\stepr\\Desktop\\Фото\\  ||");
                         Console.Write("---->");
                         x = Console.ReadLine()?.Trim();
@@ -37,28 +34,35 @@ namespace PhotoSort
                         }
                         break;
 
-                    case "2": //Показать все файлы
+                    case "2"://Вывод всех файлов в директории
                         if (ValidatePath(x))
                             s.SearchFile(x);
                         break;
 
-                    case "3"://Сжатие файлов
-                        hash.RizeImage(s.SearchFile(x));
-                        break;
-
-                    case "4"://...
+                    case "3"://Поиск дубликатов и вывод их в терминале
                         if (ValidatePath(x))
-                            s.SearchFile(x);
+                            hash.FindAndPrintImageDuplicates(s.SearchFile(x));
                         break;
 
-                    case "5"://...
+                    case "4"://Удаление дубликатов
                         if (ValidatePath(x))
-                            s.SearchFile(x);
+                        {
+                            Console.Write("Вы уверены, что хотите удалить дубликаты? (y/n): ");
+                            string confirm = Console.ReadLine()?.Trim().ToLower();
+                            if (confirm == "y" || confirm == "д")
+                            {
+                                hash.FindAndPrintImageDuplicates(s.SearchFile(x));
+                            }
+                            else
+                            {
+                                Console.WriteLine("Удаление отменено.");
+                            }
+                        }
                         break;
 
+                    case "exit":
                     case "Exit":
                         exit = true;
-                        s.SearchFile(x);
                         break;
 
                     default:
@@ -87,20 +91,19 @@ namespace PhotoSort
         {
             Console.WriteLine();
             Console.WriteLine("             [Опции PhotoSort]             ");
-            Console.WriteLine("--->[1.Указать путь к папке или сменить его.");
-            Console.WriteLine("--->[2.Показать содержимое папки.");
-            Console.WriteLine("--->[3.Преобразовать фото.");
-            Console.WriteLine("--->[4.");
-            Console.WriteLine("--->[5.");
-            Console.WriteLine("--->[6.");
-            Console.WriteLine("--->Exit - выход из программы");
+            Console.WriteLine("--->[1. Указать путь к папке или сменить его.");
+            Console.WriteLine("--->[2. Показать содержимое папки.");
+            Console.WriteLine("--->[3. Найти дубликаты изображений.");
+            Console.WriteLine("--->[4. Удалить дубликаты изображений.");
+            Console.WriteLine("--->[Exit - выход из программы]");
             Console.Write("---->");
         }
 
         private static void head()
         {
+            Console.WriteLine("====== PhotoSort v1.0 ======");
             string[] photo = new string[]
-                {
+                        {
                     "||||||||   |||    |||     .OOO.     |!|!||!|!|     .OOO.                o###########o",
                     "|||   ||   |||    |||   |||   |||   ||!||||!||   |||   |||             o#############o",
                     "|||   ||   |||    |||   |||   |||      ||||      |||   |||            ################# ",
@@ -123,7 +126,7 @@ namespace PhotoSort
                     "       |||   |||          |||     |||   |||   \\\\\\     ||||           |||    ||| ",
                     "       |||   |||          |||     |||   |||    \\\\\\    |||||||||||    |||    |||",
                     "/////////    ||||||||||   |.|     |.|   |||     \\\\\\   |||||||||||    |||    |||",
-                };
+                        };
             foreach (var line in photo)
             {
                 Console.WriteLine(line);

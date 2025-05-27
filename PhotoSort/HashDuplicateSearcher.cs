@@ -1,90 +1,128 @@
 ﻿using Aspose.Imaging;
+using System.Collections.Concurrent;
 using System.Drawing;
-using Color = System.Drawing.Color;
 using Image = Aspose.Imaging.Image;
-
-
-///<summary>
-///1. Уменьшить размер. В данном случае мы уменьшаем его до 8х8.
-///2. Убрать цвет.
-///3. Найти среднее. Вычислите среднее значение для всех 64 цветов.
-///4. Цепочка битов. 1 или 0 в зависимости от того, больше или меньше среднего цвета.
-///5. Постройте хэш. 
-///</summary>
-
-
 
 namespace PhotoSort
 {
     public class HashDuplicateSearcher
     {
-        public long ColorAverage(List<FileInfo> files)
+        public void FindAndPrintImageDuplicates(List<FileInfo> imageFiles)
         {
-            long sumA = 0, sumR = 0, sumG = 0, sumB = 0;
-            Dictionary<Color, int> colorCounts = new Dictionary<Color, int>();
-            foreach (FileInfo file in files)
+            if (imageFiles == null || imageFiles.Count == 0)
             {
-                using (Bitmap bmp = new Bitmap(file.FullName))
+                Console.WriteLine("Список файлов пуст.");
+                return;
+            }
+
+            Console.WriteLine("Поиск дубликатов изображений...");
+            Console.WriteLine($"Проанализировано файлов: {imageFiles.Count}");
+
+            var duplicateGroups = HashEditParallel(imageFiles);
+
+            int duplicateGroupsCount = 0;
+            int totalDuplicates = 0;
+
+            foreach (var group in duplicateGroups.Where(g => g.Value.Count > 1).OrderByDescending(g => g.Value.Count))
+            {
+                duplicateGroupsCount++;
+                totalDuplicates += group.Value.Count - 1;
+
+                Console.WriteLine($"\nГруппа дубликатов #{duplicateGroupsCount} (хэш {group.Key:X16})");
+                Console.WriteLine($"Найдено копий: {group.Value.Count - 1}");
+
+                // Первый файл — считаем оригиналом
+                var original = group.Value.First();
+                Console.WriteLine($"[✓] Оригинал сохранён: {original}");
+
+                foreach (var file in group.Value.Skip(1))
                 {
-                    for (int i = 0; i != 64; i++)
+                    try
                     {
-                        for (int d = 0; d != 5;)
-                        {
-                            Color pixelColor = bmp.GetPixel(i, d);
-                            if (i % 8 == 0)
-                                d++;
-                            sumA += pixelColor.A;
-                            sumR += pixelColor.R;
-                            sumG += pixelColor.G;
-                            sumB += pixelColor.B;
-                        }
+                        File.Delete(file);
+                        Console.WriteLine($"Удалено: {file}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Ошибка при удалении {file}: {ex.Message}");
                     }
                 }
             }
 
-            return  (sumA + sumR + sumG + sumB) / 64;
+            Console.WriteLine($"\nИтоговый отчет:");
+            Console.WriteLine($"- Всего файлов проанализировано: {imageFiles.Count}");
+            Console.WriteLine($"- Найдено групп дубликатов: {duplicateGroupsCount}");
+            Console.WriteLine($"- Удалено файлов-дубликатов: {totalDuplicates}");
         }
 
-        public void RizeImage(List<FileInfo> files)
+        public Dictionary<ulong, List<string>> HashEditParallel(List<FileInfo> files)
         {
-            foreach (FileInfo file in files)
-            {
-                using (var image = (RasterImage)Image.Load(file.FullName))
-                {
-                    image.AdjustContrast(10);// Увеличение контрастности изображения
-                    image.Resize(8, 8);// Изменение размера до 8x8 пикселей
-                    image.Grayscale();// Преобразование в оттенки серого
-                }
-            }
-            
-        }
+            var hashes = new ConcurrentDictionary<ulong, ConcurrentBag<string>>();
 
-        public int ReturnBit(long numAverage, List<FileInfo> files)
-        {
-            long sumA = 0, sumR = 0, sumG = 0, sumB = 0;
-            long sum
-            foreach (FileInfo file in files)
+            Parallel.ForEach(files, file =>
             {
-                using (Bitmap bmp = new Bitmap(file.FullName))
+                try
                 {
-                    for (int i = 0; i != 64; i++)
+                    using (var image = (RasterImage)Image.Load(file.FullName))
                     {
-                        for (int d = 0; d != 5;)
-                        {
-                            Color pixelColor = bmp.GetPixel(i, d);
-                            if (i % 8 == 0)
-                                d++;
-                            sumA += pixelColor.A;
-                            sumR += pixelColor.R;
-                            sumG += pixelColor.G;
-                            sumB += pixelColor.B;
+                        image.AdjustContrast(10);
+                        image.Resize(8, 8);
 
+                        var grayscale = GetGrayscaleValues(image);
+                        var avg = grayscale.Average();
+
+                        var bits = new bool[64];
+                        for (int i = 0; i < 64; i++)
+                        {
+                            bits[i] = grayscale[i] > avg;
                         }
+
+                        ulong hash = BitsToHash(bits);
+                        hashes.AddOrUpdate(hash,
+                            a => new ConcurrentBag<string> { file.FullName },
+                            (a, list) =>
+                            {
+                                list.Add(file.FullName);
+                                return list;
+                            });
                     }
                 }
-                        
-                if (sumA + sumR + sumG + sumB) / 64 > numAverage)
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[!] Ошибка обработки файла {file.FullName}: {ex.Message}");
+                }
+            });
+
+            return hashes.ToDictionary(pair => pair.Key, pair => pair.Value.ToList());
+        }
+
+        private double[] GetGrayscaleValues(RasterImage image)
+        {
+            var grayscale = new double[64];
+
+            for (int y = 0; y < 8; y++)
+            {
+                for (int x = 0; x < 8; x++)
+                {
+                    var color = image.GetPixel(x, y);
+                    grayscale[y * 8 + x] = 0.299 * color.R + 0.587 * color.G + 0.114 * color.B;
+                }
             }
+
+            return grayscale;
+        }
+
+        private ulong BitsToHash(bool[] bits)
+        {
+            ulong hash = 0;
+            for (int i = 0; i < 64; i++)
+            {
+                if (bits[i])
+                {
+                    hash |= (1UL << (63 - i));
+                }
+            }
+            return hash;
         }
     }
 }

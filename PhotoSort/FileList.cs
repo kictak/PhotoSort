@@ -15,12 +15,10 @@ namespace PhotoSort
         {
             List<FileInfo> allFiles = new List<FileInfo>();
             Regex regex = new Regex(@"\w+\.jpg$", RegexOptions.IgnoreCase);
-            Console.WriteLine("=====");
-            Console.WriteLine($"Папка:{startPath}");
-            Console.WriteLine('>');
+            Console.WriteLine($"Поиск файлов в: {startPath}");
+
             try
             {
-                // Получаем все файлы в текущей папке
                 string[] files = Directory.GetFiles(startPath);
                 foreach (string file in files)
                 {
@@ -28,17 +26,13 @@ namespace PhotoSort
                     {
                         FileInfo fileinfo = new FileInfo(file);
                         allFiles.Add(fileinfo);
-                        Console.WriteLine($"Имя файла: {fileinfo.Name} || Дата создания: {fileinfo.LastWriteTime} || {(double)fileinfo.Length / 1000000} мб");
+                        Console.WriteLine($"Файл: {fileinfo.Name} | Дата: {fileinfo.LastWriteTime} | Размер: {(double)fileinfo.Length / 1_000_000:F2} МБ");
                     }
                 }
 
-                // Рекурсивно обходим вложенные папки
                 string[] folders = Directory.GetDirectories(startPath);
                 foreach (string folder in folders)
                 {
-                    Console.WriteLine("=====");
-                    Console.WriteLine($"Папка: {folder}");
-                    Console.WriteLine('>');
                     allFiles.AddRange(GetRecursFiles(folder));
                 }
             }
@@ -46,17 +40,13 @@ namespace PhotoSort
             {
                 Console.WriteLine($"Ошибка: {e.Message}");
             }
-            Console.WriteLine();
+
             return allFiles;
         }
 
         private static void FileCount(List<FileInfo> files)
         {
-            Console.WriteLine();
-            Console.WriteLine("======================");
-            Console.WriteLine($"^ Всего файлов {files.Count}^");
-            Console.WriteLine("======================");
-            Console.WriteLine();
+            Console.WriteLine($"\n>>> Всего найдено файлов: {files.Count}\n");
         }
     }
 }
