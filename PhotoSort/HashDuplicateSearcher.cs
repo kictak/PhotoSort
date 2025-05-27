@@ -33,7 +33,7 @@ namespace PhotoSort
 
                 // Первый файл — считаем оригиналом
                 var original = group.Value.First();
-                Console.WriteLine($"[✓] Оригинал сохранён: {original}");
+                Console.WriteLine($"Оригинал сохранён: {original}");
 
                 foreach (var file in group.Value.Skip(1))
                 {
@@ -89,7 +89,7 @@ namespace PhotoSort
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[!] Ошибка обработки файла {file.FullName}: {ex.Message}");
+                    Console.WriteLine($"!!! Ошибка обработки файла {file.FullName}: {ex.Message}");
                 }
             });
 

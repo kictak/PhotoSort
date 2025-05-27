@@ -9,6 +9,7 @@ namespace PhotoSort
         {
             head();
             FileList s = new FileList();
+            Watermark w = new Watermark();
             HashDuplicateSearcher hash = new HashDuplicateSearcher();
             string x = string.Empty;
 
@@ -60,6 +61,13 @@ namespace PhotoSort
                         }
                         break;
 
+                    case "5"://Создание вотемарки на каждой фотографии
+                        Console.WriteLine("Введите путь к фото с вотермаркой");
+                        string pathWatermark = Console.ReadLine()?.Trim().ToLower();
+                        if (ValidatePath(x))
+                            w.WatermarkCreate(s.SearchFile(x), pathWatermark);
+                        break;
+
                     case "exit":
                     case "Exit":
                         exit = true;
@@ -95,6 +103,7 @@ namespace PhotoSort
             Console.WriteLine("--->[2. Показать содержимое папки.");
             Console.WriteLine("--->[3. Найти дубликаты изображений.");
             Console.WriteLine("--->[4. Удалить дубликаты изображений.");
+            Console.WriteLine("--->[5. Вставить вотемарку на каждое изображение.");
             Console.WriteLine("--->[Exit - выход из программы]");
             Console.Write("---->");
         }
