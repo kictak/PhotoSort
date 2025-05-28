@@ -11,7 +11,7 @@ namespace PhotoSort
             {
                 try
                 {
-                    using (var watermarkImage = Image.FromFile(watermark))
+                    using (var watermarkImage = Image.FromFile(watermark)) // Водяной знак
                     {
                         // Загружаем оригинал безопасно в память
                         using (FileStream fs = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
@@ -21,12 +21,19 @@ namespace PhotoSort
                         {
                             using (Graphics g = Graphics.FromImage(bmp))
                             {
+                                // Простая корректировка ориентации для фото с телефона
+                                // Если ширина больше высоты, предполагаем, что фото должно быть повернуто
+                                if (originalImage.Width > originalImage.Height)
+                                {
+                                    originalImage.RotateFlip(RotateFlipType.Rotate90FlipNone); // Поворот на 90° по часовой
+                                }
+
+                                // Рисуем исправленное изображение
                                 g.DrawImage(originalImage, 0, 0);
 
-                                // Прозрачность
+                                // Прозрачность водяного знака
                                 ColorMatrix matrix = new ColorMatrix();
                                 matrix.Matrix33 = 0.5f;
-
                                 ImageAttributes attributes = new ImageAttributes();
                                 attributes.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
 
@@ -40,13 +47,16 @@ namespace PhotoSort
                                     GraphicsUnit.Pixel, attributes);
                             }
 
-                            bmp.Save(file.FullName, originalImage.RawFormat); // сохраняем корректно
+                            bmp.Save(file.FullName, originalImage.RawFormat); // Сохраняем
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"!!! Ошибка обработки файла {file.FullName}: {ex.Message}");
+                    Console.WriteLine($"!!! Ошибка обработки файла {file.FullName}");
+                    Console.WriteLine($"Тип ошибки: {ex.GetType().Name}");
+                    Console.WriteLine($"Сообщение: {ex.Message}");
+                    Console.WriteLine($"StackTrace: {ex.StackTrace}");
                 }
             });
         }

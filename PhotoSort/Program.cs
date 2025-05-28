@@ -1,11 +1,20 @@
 ﻿//C:\Users\stepr\Desktop\Фото\
 //C:\Users\stepr\Desktop\копия\
 //C:\Users\stepr\Desktop\копия 2\
+//C:\Users\stepr\Desktop\копия 3\
+//C:\Users\stepr\Desktop\марка\istockphoto-1286277665-612x612.jpg
+//C:\Users\stepr\Desktop\марка\
+using System;
+using System.IO;
+
 namespace PhotoSort
 {
     internal class Program
     {
-        private static void Main()
+        public static string folderPath = "";
+        public static string foldermark = "";
+
+        private static async Task Main()
         {
             head();
             FileList s = new FileList();
@@ -17,13 +26,14 @@ namespace PhotoSort
             while (!exit)
             {
                 Option();
-                switch (Console.ReadLine())
+                string input = Console.ReadLine();
+                switch (input)
                 {
-                    case "1"://Указание папки для работы с ней
+                    case "1": // Указание папки для работы с ней
                         Console.WriteLine("\n||   Вставьте, пожалуйста, путь к папке.      ||");
                         Console.WriteLine("|| Пример пути: C:\\Users\\stepr\\Desktop\\Фото\\  ||");
                         Console.Write("---->");
-                        x = Console.ReadLine()?.Trim();
+                        folderPath = x = Console.ReadLine()?.Trim();
                         if (string.IsNullOrEmpty(x) || !Directory.Exists(x))
                         {
                             Console.WriteLine("Введён некорректный путь или папка не существует. Попробуйте снова.");
@@ -35,21 +45,22 @@ namespace PhotoSort
                         }
                         break;
 
-                    case "2"://Вывод всех файлов в директории
+                    case "2": // Показать содержимое папки
                         if (ValidatePath(x))
                             s.SearchFile(x);
                         break;
 
-                    case "3"://Поиск дубликатов и вывод их в терминале
+                    case "3": // Найти дубликаты изображений
                         if (ValidatePath(x))
                             hash.FindAndPrintImageDuplicates(s.SearchFile(x));
                         break;
 
-                    case "4"://Удаление дубликатов
+                    case "4": // Удалить дубликаты
                         if (ValidatePath(x))
                         {
                             Console.Write("Вы уверены, что хотите удалить дубликаты? (y/n): ");
                             string confirm = Console.ReadLine()?.Trim().ToLower();
+                            foldermark = confirm;
                             if (confirm == "y" || confirm == "д")
                             {
                                 hash.FindAndPrintImageDuplicates(s.SearchFile(x));
@@ -61,11 +72,32 @@ namespace PhotoSort
                         }
                         break;
 
-                    case "5"://Создание вотемарки на каждой фотографии
-                        Console.WriteLine("Введите путь к фото с вотермаркой");
+                    case "5": // Вставить водяной знак
+                        Console.WriteLine("Введите путь к фото с водяным знаком");
+                        Console.Write("--->");
                         string pathWatermark = Console.ReadLine()?.Trim().ToLower();
                         if (ValidatePath(x))
                             w.WatermarkCreate(s.SearchFile(x), pathWatermark);
+                        break;
+
+                    case "6": // Сортировка фото
+                        if (ValidatePath(x))
+                        {
+                            Console.WriteLine("\nВыберите способ сортировки:");
+                            Console.WriteLine("1. По дням");
+                            Console.WriteLine("2. По неделям");
+                            Console.WriteLine("3. По месяцам");
+                            Console.Write("---->");
+                            if (int.TryParse(Console.ReadLine(), out int sortOption) && sortOption >= 1 && sortOption <= 3)
+                            {
+                                await s.SortPhotosAsync(x, sortOption);
+                                Console.WriteLine("Сортировка завершена.");
+                            }
+                            else
+                            {
+                                Console.WriteLine("Неверный выбор. Введите 1, 2 или 3.");
+                            }
+                        }
                         break;
 
                     case "exit":
@@ -99,11 +131,24 @@ namespace PhotoSort
         {
             Console.WriteLine();
             Console.WriteLine("             [Опции PhotoSort]             ");
+            if (folderPath != string.Empty)
+            {
+                Console.WriteLine("                                           ");
+                Console.WriteLine($"Выбранная папка => {folderPath} ");
+                Console.WriteLine("                                           ");
+            }
+            if (foldermark != string.Empty)
+            {
+                Console.WriteLine("                                           ");
+                Console.WriteLine($"Выбранная вотемарка => {foldermark} ");
+                Console.WriteLine("                                           ");
+            }
             Console.WriteLine("--->[1. Указать путь к папке или сменить его.");
             Console.WriteLine("--->[2. Показать содержимое папки.");
             Console.WriteLine("--->[3. Найти дубликаты изображений.");
             Console.WriteLine("--->[4. Удалить дубликаты изображений.");
-            Console.WriteLine("--->[5. Вставить вотемарку на каждое изображение.");
+            Console.WriteLine("--->[5. Вставить водяной знак на каждое изображение.");
+            Console.WriteLine("--->[6. Сортировать фото по дате.");
             Console.WriteLine("--->[Exit - выход из программы]");
             Console.Write("---->");
         }
@@ -112,30 +157,30 @@ namespace PhotoSort
         {
             Console.WriteLine("====== PhotoSort v1.0 ======");
             string[] photo = new string[]
-                        {
-                    "||||||||   |||    |||     .OOO.     |!|!||!|!|     .OOO.                o###########o",
-                    "|||   ||   |||    |||   |||   |||   ||!||||!||   |||   |||             o#############o",
-                    "|||   ||   |||    |||   |||   |||      ||||      |||   |||            ################# ",
-                    "||||||||   ||||||||||   |||   |||      ||||      |||   |||            ######  \\########o",
-                    "|||        ||||||||||   |||   |||      ||||      |||   |||           '#;^ _^,/---\\#####!",
-                    "|||        |||    |||   |||   |||      ||||      |||   |||           ,` /^_ .-~^~-.__\\#",
-                    "|||        |||    |||   |||   |||      ||||      |||   |||          /    ^\\/,,@@@,, ;|",
-                    "|||        |||    |||   |||   |||      ||||      |||   |||         |      \\!!@@@@@!! ^,",
-                    "|||        |||    |||     `OOO`        ||||        `OOO`          #.    .\\; '9@@@P'   ^,",
-                    "                                                                  ###./^ ----,_^^      /@-._",
-                    "                                                                                ^--._,o@@@@@@",
-                    "                                                                                   ^;@@@@@@@@@",
-                    "                                                                                     ^-;@@@@ ",
-                    "//////////   ||||||||||     .|||||.     ||||||||      |||||||||||    |||    |||",
-                    "|||          |||          |||     |||   |||    ||     |||||||||||    |||    |||",
-                    "|||          |||          |||     |||   |||    ||     ||||           |||    ||| ",
-                    "|||          |||          |||     |||   |||    ||     ||||           |||||||||| ",
-                    "||||||||||   ||||||||||   |||||||||||   ||||||||      ||||           |||||||||| ",
-                    "       |||   |||          |||     |||   |||  \\\\\\      ||||           |||    ||| ",
-                    "       |||   |||          |||     |||   |||   \\\\\\     ||||           |||    ||| ",
-                    "       |||   |||          |||     |||   |||    \\\\\\    |||||||||||    |||    |||",
-                    "/////////    ||||||||||   |.|     |.|   |||     \\\\\\   |||||||||||    |||    |||",
-                        };
+            {
+                "||||||||   |||    |||     .OOO.     |!|!||!|!|     .OOO.                o###########o",
+                "|||   ||   |||    |||   |||   |||   ||!||||!||   |||   |||             o#############o",
+                "|||   ||   |||    |||   |||   |||      ||||      |||   |||            ################# ",
+                "||||||||   ||||||||||   |||   |||      ||||      |||   |||            ######  \\########o",
+                "|||        ||||||||||   |||   |||      ||||      |||   |||           '#;^ _^,/---\\#####!",
+                "|||        |||    |||   |||   |||      ||||      |||   |||           , /^_ .-~^~-.__\\#",
+                "|||        |||    |||   |||   |||      ||||      |||   |||          /    ^\\/,,@@@,, ;|",
+                "|||        |||    |||   |||   |||      ||||      |||   |||         |      \\!!@@@@@!! ^,",
+                "|||        |||    |||     OOO        ||||        OOO          #.    .\\; '9@@@P'   ^,",
+                "                                                                  ###./^ ----,_^^      /@-._",
+                "                                                                                ^--._,o@@@@@@",
+                "                                                                                   ^;@@@@@@@@@",
+                "                                                                                     ^-;@@@@ ",
+                "//////////   ||||||||||     .|||||.     ||||||||      |||||||||||    |||    |||",
+                "|||          |||          |||     |||   |||    ||     |||||||||||    |||    |||",
+                "|||          |||          |||     |||   |||    ||     ||||           |||    ||| ",
+                "|||          |||          |||     |||   |||    ||     ||||           |||||||||| ",
+                "||||||||||   ||||||||||   |||||||||||   ||||||||      ||||           |||||||||| ",
+                "       |||   |||          |||     |||   |||  \\\\\\      ||||           |||    ||| ",
+                "       |||   |||          |||     |||   |||   \\\\\\     ||||           |||    ||| ",
+                "       |||   |||          |||     |||   |||    \\\\\\    |||||||||||    |||    |||",
+                "/////////    ||||||||||   |.|     |.|   |||     \\\\\\   |||||||||||    |||    |||",
+            };
             foreach (var line in photo)
             {
                 Console.WriteLine(line);
